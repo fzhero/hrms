@@ -1,0 +1,62 @@
+==================================================
+XAMPP DATABASE QUICK SETUP
+==================================================
+
+STEP 1: Start XAMPP
+-------------------
+1. Open XAMPP Control Panel
+2. Start Apache
+3. Start MySQL
+
+STEP 2: Create Database (Choose ONE method)
+--------------------------------------------
+
+METHOD A - Using phpMyAdmin (Easiest):
+1. Open: http://localhost/phpmyadmin
+2. Click "SQL" tab
+3. Copy entire content from: database/create_database.sql
+4. Paste and click "Go"
+
+METHOD B - Using Command Line:
+1. Open Command Prompt
+2. cd C:\xampp\mysql\bin
+3. mysql -u root -p
+   (Press Enter for password if not set)
+4. Copy-paste SQL from create_database.sql
+
+STEP 3: Configure .env File
+----------------------------
+1. Copy .env.example to .env (if not exists)
+2. Update these lines in .env:
+
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=auth_db
+DB_USERNAME=root
+DB_PASSWORD=
+
+(Leave DB_PASSWORD empty if you didn't set MySQL password)
+
+STEP 4: Test Connection
+-----------------------
+cd backend
+php artisan migrate:status
+
+If no errors, you're ready!
+
+==================================================
+TROUBLESHOOTING
+==================================================
+
+Problem: "Access denied for user 'root'@'localhost'"
+Solution: Check if MySQL is running in XAMPP
+
+Problem: "Unknown database 'auth_db'"
+Solution: Run create_database.sql in phpMyAdmin
+
+Problem: "Table already exists"
+Solution: This is OK, or use: php artisan migrate:fresh
+
+==================================================
+
