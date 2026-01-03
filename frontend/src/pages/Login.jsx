@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { useNavigate, Link } from 'react-router-dom'
+import { useState, useEffect } from 'react'
+import { useNavigate, Link, useLocation } from 'react-router-dom'
 import AuthLayout from '../components/AuthLayout'
 import Input from '../components/common/Input'
 import Button from '../components/common/Button'
@@ -8,13 +8,38 @@ import { validateEmail, validateRequired, validatePassword, getValidationError }
 
 const Login = () => {
   const navigate = useNavigate()
+  const location = useLocation()
   const [formData, setFormData] = useState({
     email: '',
     password: '',
   })
   const [errors, setErrors] = useState({})
   const [apiError, setApiError] = useState('')
+  const [successMessage, setSuccessMessage] = useState('')
   const [loading, setLoading] = useState(false)
+  const [showEmailVerification, setShowEmailVerification] = useState(false)
+  const [resendLoading, setResendLoading] = useState(false)
+  const [resendSuccess, setResendSuccess] = useState(false)
+
+  // Check for success message from navigation state (e.g., after email verification)
+  useEffect(() => {
+    if (location.state?.message) {
+      setSuccessMessage(location.state.message)
+      // Clear the state to prevent showing message on refresh
+      window.history.replaceState({}, document.title)
+      // Hide success message after 5 seconds
+      setTimeout(() => {
+        setSuccessMessage('')
+      }, 5000)
+    }
+    
+    // If resendEmail is in state, pre-fill email and show verification banner
+    if (location.state?.resendEmail) {
+      setFormData(prev => ({ ...prev, email: location.state.resendEmail }))
+      setShowEmailVerification(true)
+      window.history.replaceState({}, document.title)
+    }
+  }, [location.state])
 
   const handleChange = (e) => {
     const { name, value } = e.target
@@ -29,10 +54,9 @@ const Login = () => {
   const validateForm = () => {
     const newErrors = {}
 
+    // Employee ID or Email - just check if required
     if (!validateRequired(formData.email)) {
-      newErrors.email = getValidationError('email', formData.email)
-    } else if (!validateEmail(formData.email)) {
-      newErrors.email = getValidationError('email', formData.email)
+      newErrors.email = 'Employee ID or Email is required'
     }
 
     if (!validateRequired(formData.password)) {
@@ -59,12 +83,34 @@ const Login = () => {
       const response = await api.post('/login', formData)
       
       if (response.data.status) {
+        const userRole = response.data.user.role
+        
+        // Check if user is employee (not admin)
+        if (userRole === 'admin') {
+          setApiError('Access denied. Please use Admin Login page.')
+          localStorage.removeItem('token')
+          localStorage.removeItem('user')
+          return
+        }
+        
         // Save token and user data
         localStorage.setItem('token', response.data.token)
         localStorage.setItem('user', JSON.stringify(response.data.user))
         
-        // Redirect to dashboard
-        navigate('/dashboard')
+        // Check if password change is required (first login with system-generated password)
+        if (response.data.requires_password_change) {
+          // Redirect to password change page
+          navigate('/change-password', { 
+            state: { 
+              message: 'Please change your system-generated password for security.',
+              required: true 
+            } 
+          })
+          return
+        }
+        
+        // Redirect to employee dashboard
+        navigate('/employee/dashboard')
       }
     } catch (error) {
       if (error.response?.data) {
@@ -78,7 +124,14 @@ const Login = () => {
           })
           setErrors(backendErrors)
         } else {
-          setApiError(errorData.message || 'Login failed. Please try again.')
+          // Handle email verification error
+          if (error.response?.status === 403 && errorData.email_verified === false) {
+            setShowEmailVerification(true)
+            setApiError('')
+          } else {
+            setApiError(errorData.message || 'Login failed. Please try again.')
+            setShowEmailVerification(false)
+          }
         }
       } else {
         setApiError('Network error. Please check your connection.')
@@ -88,43 +141,133 @@ const Login = () => {
     }
   }
 
+  const handleResendVerification = async () => {
+    // Extract email from formData (could be email or employee_id)
+    const emailToVerify = formData.email.includes('@') ? formData.email : null
+    
+    if (!emailToVerify) {
+      setApiError('Please enter your email address to resend verification.')
+      return
+    }
+
+    setResendLoading(true)
+    setResendSuccess(false)
+    setApiError('')
+
+    try {
+      const response = await api.post('/resend-verification', { email: emailToVerify })
+      
+      if (response.data.status) {
+        setResendSuccess(true)
+        setApiError('')
+        // Hide success message after 5 seconds
+        setTimeout(() => {
+          setResendSuccess(false)
+        }, 5000)
+      }
+    } catch (error) {
+      if (error.response?.data) {
+        setApiError(error.response.data.message || 'Failed to resend verification email.')
+      } else {
+        setApiError('Network error. Please check your connection.')
+      }
+    } finally {
+      setResendLoading(false)
+    }
+  }
+
+  const handleDismissVerification = () => {
+    setShowEmailVerification(false)
+    setResendSuccess(false)
+    setApiError('')
+  }
+
   return (
-    <AuthLayout 
-      title="Welcome Back" 
-      subtitle="Sign in to your account"
-    >
+    <AuthLayout showLogo={true}>
+      <div className="page-title">Employee Sign In</div>
       <form onSubmit={handleSubmit} className="auth-form">
-        {apiError && <div className="alert alert-error">{apiError}</div>}
+        {successMessage && (
+          <div className="alert alert-success" style={{ marginBottom: '20px' }}>
+            {successMessage}
+          </div>
+        )}
+        {showEmailVerification && (
+          <div className="email-verification-banner">
+            <div className="email-verification-content">
+              <div className="email-verification-icon">📧</div>
+              <div className="email-verification-text">
+                <h3>Email Verification Required</h3>
+                <p>Please verify your email address before logging in. Check your inbox for the verification link.</p>
+                {resendSuccess && (
+                  <div className="alert alert-success" style={{ marginTop: '12px', marginBottom: '0' }}>
+                    Verification email sent successfully! Please check your inbox.
+                  </div>
+                )}
+              </div>
+            </div>
+            <div className="email-verification-actions">
+              <Button
+                type="button"
+                onClick={handleResendVerification}
+                loading={resendLoading}
+                variant="secondary"
+                style={{ marginRight: '8px' }}
+              >
+                Resend Email
+              </Button>
+              <button
+                type="button"
+                onClick={handleDismissVerification}
+                className="btn-dismiss-verification"
+              >
+                Dismiss
+              </button>
+            </div>
+          </div>
+        )}
+        {apiError && !showEmailVerification && <div className="alert alert-error">{apiError}</div>}
 
-        <Input
-          type="email"
-          name="email"
-          placeholder="Email address"
-          value={formData.email}
-          onChange={handleChange}
-          error={errors.email}
-          required
-        />
+        <div className="input-group">
+          <label htmlFor="email">Employee ID / Email:-</label>
+          <Input
+            type="text"
+            name="email"
+            id="email"
+            placeholder="Enter Employee ID or Email"
+            value={formData.email}
+            onChange={handleChange}
+            error={errors.email}
+            required
+            noWrapper={true}
+          />
+          {errors.email && <span className="error-message">{errors.email}</span>}
+        </div>
 
-        <Input
-          type="password"
-          name="password"
-          placeholder="Password"
-          value={formData.password}
-          onChange={handleChange}
-          error={errors.password}
-          required
-        />
+        <div className="input-group">
+          <label htmlFor="password">Password:-</label>
+          <Input
+            type="password"
+            name="password"
+            id="password"
+            placeholder="Enter Password"
+            value={formData.password}
+            onChange={handleChange}
+            error={errors.password}
+            required
+            noWrapper={true}
+          />
+          {errors.password && <span className="error-message">{errors.password}</span>}
+        </div>
 
-        <Button type="submit" loading={loading} variant="primary">
-          Sign In
+        <Button type="submit" loading={loading} variant="primary" className="signin-btn">
+          SIGN IN
         </Button>
 
         <div className="auth-footer">
           <p>
-            Don't have an account?{' '}
+            Don't have an Account?{' '}
             <Link to="/signup" className="auth-link">
-              Sign up
+              Sign Up
             </Link>
           </p>
         </div>

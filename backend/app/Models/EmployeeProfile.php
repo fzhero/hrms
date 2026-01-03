@@ -32,6 +32,19 @@ class EmployeeProfile extends Model
         'salary',
         'profile_photo',
         'documents',
+        // Personal Details
+        'date_of_birth',
+        'nationality',
+        'personal_email',
+        'gender',
+        'marital_status',
+        // Bank Details
+        'account_number',
+        'bank_name',
+        'ifsc_code',
+        'pan_no',
+        'uan_no',
+        'emp_code',
     ];
 
     /**
@@ -41,6 +54,7 @@ class EmployeeProfile extends Model
      */
     protected $casts = [
         'joining_date' => 'date',
+        'date_of_birth' => 'date',
         'salary' => 'decimal:2',
         'documents' => 'array',
     ];

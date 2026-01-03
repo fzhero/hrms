@@ -41,7 +41,29 @@ class User extends Authenticatable
      */
     protected $casts = [
         'email_verified_at' => 'datetime',
+        'password_changed_at' => 'datetime',
     ];
+    
+    /**
+     * Check if user has changed their password
+     * Returns false if using system-generated password (first login)
+     * 
+     * @return bool
+     */
+    public function hasChangedPassword(): bool
+    {
+        return !is_null($this->password_changed_at);
+    }
+    
+    /**
+     * Check if this is user's first login
+     * 
+     * @return bool
+     */
+    public function isFirstLogin(): bool
+    {
+        return is_null($this->password_changed_at);
+    }
 
     /**
      * Get the employee profile associated with the user.
@@ -73,6 +95,14 @@ class User extends Authenticatable
     public function payrolls()
     {
         return $this->hasMany(Payroll::class);
+    }
+
+    /**
+     * Get the salary structure for the user.
+     */
+    public function salaryStructure()
+    {
+        return $this->hasOne(\App\Models\SalaryStructure::class);
     }
 }
 

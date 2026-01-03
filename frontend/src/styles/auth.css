@@ -22,6 +22,7 @@ body {
   justify-content: center;
   min-height: 100vh;
   padding: 20px;
+  background: #f7fafc;
 }
 
 .auth-card {
@@ -29,8 +30,37 @@ body {
   border-radius: 12px;
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
   width: 100%;
-  max-width: 420px;
+  max-width: 480px;
   padding: 40px;
+}
+
+.auth-logo {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.logo-placeholder {
+  width: 120px;
+  height: 60px;
+  background: #f7fafc;
+  border: 2px dashed #cbd5e0;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  color: #718096;
+  font-weight: 500;
+}
+
+.page-title {
+  font-size: 24px;
+  font-weight: 700;
+  color: #1a202c;
+  text-align: center;
+  margin-bottom: 32px;
 }
 
 .auth-header {
@@ -61,9 +91,18 @@ body {
   position: relative;
   display: flex;
   flex-direction: column;
+  margin-bottom: 20px;
 }
 
-.input-group input {
+.input-group label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #2d3748;
+  margin-bottom: 8px;
+}
+
+.input-group input,
+.input-group select {
   width: 100%;
   padding: 12px 16px;
   border: 2px solid #e2e8f0;
@@ -71,16 +110,85 @@ body {
   font-size: 14px;
   transition: all 0.2s;
   background: #f7fafc;
+  font-family: inherit;
 }
 
-.input-group input:focus {
+.input-group select {
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%234a5568' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  padding-right: 36px;
+}
+
+.input-group input:focus,
+.input-group select:focus {
   outline: none;
-  border-color: #667eea;
+  border-color: #8b5cf6;
   background: white;
 }
 
-.input-group input.input-error {
+.input-group input.input-error,
+.input-group select.input-error {
   border-color: #e53e3e;
+}
+
+.company-logo-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  position: relative;
+}
+
+.company-logo-wrapper .input-group {
+  flex: 1;
+  margin-bottom: 0;
+}
+
+.logo-upload-btn {
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px dashed #8b5cf6;
+  border-radius: 8px;
+  cursor: pointer;
+  background: #f3f4f6;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+
+.logo-upload-btn:hover {
+  background: #e9d5ff;
+  border-color: #7c3aed;
+}
+
+.upload-icon {
+  font-size: 20px;
+}
+
+.upload-hint {
+  font-size: 12px;
+  color: #718096;
+  margin-top: 4px;
+  margin-left: 4px;
+}
+
+.logo-preview {
+  width: 48px;
+  height: 48px;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 2px solid #8b5cf6;
+  flex-shrink: 0;
+}
+
+.logo-preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .password-toggle {
@@ -118,13 +226,26 @@ body {
 }
 
 .btn-primary {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: #8b5cf6;
   color: white;
+  border: none;
 }
 
 .btn-primary:hover:not(:disabled) {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+  background: #7c3aed;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(139, 92, 246, 0.4);
+}
+
+.signin-btn,
+.signup-btn {
+  width: 100%;
+  padding: 14px 24px;
+  font-size: 16px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-top: 8px;
 }
 
 .btn-secondary {
@@ -170,6 +291,116 @@ body {
   border: 1px solid #fc8181;
 }
 
+.alert-warning {
+  background: #feebc8;
+  color: #c05621;
+  border: 1px solid #f6ad55;
+}
+
+.alert-success {
+  background: #c6f6d5;
+  color: #22543d;
+  border: 1px solid #68d391;
+}
+
+.info-box {
+  padding: 16px;
+  background: #e6fffa;
+  border: 1px solid #81e6d9;
+  border-radius: 8px;
+  margin-bottom: 20px;
+}
+
+.info-box p {
+  margin: 0;
+  color: #234e52;
+}
+
+/* Email Verification Banner */
+.email-verification-banner {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 24px;
+  color: white;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+.email-verification-content {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.email-verification-icon {
+  font-size: 32px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.email-verification-text {
+  flex: 1;
+}
+
+.email-verification-text h3 {
+  margin: 0 0 8px 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: white;
+}
+
+.email-verification-text p {
+  margin: 0;
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.9);
+  line-height: 1.5;
+}
+
+.email-verification-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.email-verification-actions button {
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: none;
+}
+
+.email-verification-actions .btn-secondary {
+  background: white;
+  color: #667eea;
+  margin-right: 8px;
+}
+
+.email-verification-actions .btn-secondary:hover {
+  background: #f7fafc;
+  transform: translateY(-1px);
+}
+
+.email-verification-actions .btn-dismiss-verification {
+  background: transparent;
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.email-verification-actions .btn-dismiss-verification:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: white;
+}
+
 /* Auth Footer */
 .auth-footer {
   text-align: center;
@@ -179,13 +410,14 @@ body {
 }
 
 .auth-link {
-  color: #667eea;
+  color: #8b5cf6;
   text-decoration: none;
   font-weight: 600;
 }
 
 .auth-link:hover {
   text-decoration: underline;
+  color: #7c3aed;
 }
 
 /* Dashboard Styles */

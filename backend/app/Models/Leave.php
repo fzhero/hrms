@@ -23,6 +23,7 @@ class Leave extends Model
         'reason',
         'status',
         'admin_comment',
+        'attachment',
     ];
 
     /**

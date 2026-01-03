@@ -1,11 +1,16 @@
 import { BrowserRouter } from 'react-router-dom'
+import { LoaderProvider } from './contexts/LoaderContext'
+import GlobalLoader from './components/GlobalLoader'
 import AppRoutes from './routes/AppRoutes'
 
 function App() {
   return (
-    <BrowserRouter>
-      <AppRoutes />
-    </BrowserRouter>
+    <LoaderProvider>
+      <BrowserRouter>
+        <GlobalLoader />
+        <AppRoutes />
+      </BrowserRouter>
+    </LoaderProvider>
   )
 }
 
